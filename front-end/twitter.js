@@ -4,10 +4,29 @@ const button = document.querySelector('#get_tweets');
 const tweetArea = document.querySelector('#tweet-area')
 
 var input = document.getElementById("prompt");
-input.addEventListener("keyup", function(event) {
+
+/* function fetch_recursive(prompt, side) {
+  fetch(`${API_ENDPOINT}?prompt=${prompt}&model=${side}`).then((response) => {
+    return response.json()
+  }).then((response) => {
+    return JSON.parse(response)
+  }).then((data) => {
+    //add_headline_image();
+    console.log(data)
+    addDataToUI(data, side);
+    button.disabled = false;
+    button.textContent = 'Generate'
+  }).catch(err => {
+   fetch_recursive(prompt,side)
+  })
+}
+ */
+
+input.addEventListener("keyup", function (event) {
   if (event.keyCode === 13) {
-   event.preventDefault();   
-   document.getElementById("get_tweets").click();
+    event.preventDefault();
+    input.value = input.value.trim()
+    document.getElementById("get_tweets").click();
   }
 });
 
@@ -20,78 +39,81 @@ function sleep(milliseconds) {
 }
 
 button.addEventListener('click', () => {
-    if (prompt_.value.length == 0){ 
-        alert("Your text prompt is empty! Please trigger the model with at least one word.");
-        return false
-    }
+  if (prompt_.value.length == 0) {
+    alert("Your text prompt is empty! Please trigger the model with at least one word.");
+    return false
+  }
 
-    prompt = truncatePrompt(prompt_)
-    console.log(prompt)
+  prompt = truncatePrompt(prompt_)
+  console.log(prompt)
 
-    button.disabled = true;   
-    button.textContent = "Fetching";
-    
-    fetch(`${API_ENDPOINT}?prompt=${prompt}&model=left`, {
-        method: 'GET',
-        headers: { 'content-type': 'application/json' },
-
-    }).then((response) =>{
-        return response.json()
-    }).then((data) => {
-        return JSON.parse(data);
-    }).then((data) => {        
-        //add_headline_image();
-        addDataToUI(data, 'left');
-        button.disabled = false;
-        button.textContent = 'Generate'
-    });    
-
-    fetch(`${API_ENDPOINT}?prompt=${prompt}&model=right`, {
+  button.disabled = true;
+  button.textContent = "Fetching";
+  fetch_recursive(prompt, 'left');
+  fetch_recursive(prompt, 'right');
+  /* fetch(`${API_ENDPOINT}?prompt=${prompt}&model=left`, {
       method: 'GET',
       headers: { 'content-type': 'application/json' },
 
-    }).then((response) => {
+  }).then((response) =>{
       return response.json()
-    }).then((data) => {
+  }).then((data) => {
       return JSON.parse(data);
-    }).then((data) => {
-      addDataToUI(data, 'right');
+  }).then((data) => {        
+      //add_headline_image();
+      console.log(data)
+      addDataToUI(data, 'left');
       button.disabled = false;
       button.textContent = 'Generate'
-    });
+  });    
+
+  fetch(`${API_ENDPOINT}?prompt=${prompt}&model=right`, {
+    method: 'GET',
+    headers: { 'content-type': 'application/json' },
+
+  }).then((response) => {
+    return response.json()
+  }).then((data) => {
+    return JSON.parse(data);
+  }).then((data) => {
+    console.log(data)
+    addDataToUI(data, 'right');
+    button.disabled = false;
+    button.textContent = 'Generate'
+  }); */
 });
 
 function truncatePrompt(prompt) {
-    prompt = prompt.value + " "
-    prompt = prompt.substring(0, 100)
-    index = prompt.lastIndexOf(" ")
-    return prompt.substring(0, index)
+  prompt = prompt.value + " "
+  prompt = prompt.substring(0, 100)
+  index = prompt.lastIndexOf(" ")
+  return prompt.substring(0, index)
 }
 
-function addDataToUI(data, side){    
-    let area = null;
-    if(side === 'left'){ 
-      area = tweetArea.childNodes[1];
-    }else{ 
-      area = tweetArea.childNodes[3];
-    }
-    area.innerHTML = "";
-    data.sort(() => Math.random() - 0.5);
-    for(i = 0; i < data.length; i++){
-        d = data[i];
-        addTweet(d, area, side);
-    }
+function addDataToUI(data, side) {
+  let area = null;
+  if (side === 'left') {
+    area = tweetArea.childNodes[1];
+  } else {
+    area = tweetArea.childNodes[3];
+  }
+  area.innerHTML = "";
+  /* data.sort(() => Math.random() - 0.5); */
+  for (i = 0; i < data.length; i++) {
+    d = data[i];
+    addTweet(d, area, side);
+  }
 }
 
-function addTweet(tweet, area, side){      
-    const tweet_html = constructTweetHTML(tweet, side);
-    const div =  document.createElement('div');
-    div.innerHTML = tweet_html;    
-    area.appendChild(div);    
+function addTweet(tweet, area, side) {
+  const tweet_html = constructTweetHTML(tweet, side);
+  const div = document.createElement('div');
+  div.innerHTML = tweet_html;
+  area.appendChild(div);
 }
 
-function add_headline_image() {  
-  show_image("./images/collage.jpg", 800,600, "Headline image");
+function add_headline_image() {
+  show_image("./images/collage.jpg", 800, 600, "Headline image");
 }
 
 function show_image(src, width, height, alt) {
@@ -100,22 +122,22 @@ function show_image(src, width, height, alt) {
   img.width = width;
   img.height = height;
   img.alt = alt;
-  
+
   var src = document.getElementById("x");
   src.appendChild(img);
 }
 
-function constructTweetHTML(tweet, side){
-    if(side === 'left'){ 
-      src= './images/boss-baby-left-1.png'
-      username='Left-wing Baby'
-      handle='@LeftWingBaby'
-    }else{ 
-      src = './images/boss-baby-right-3.png'
-      username='Right-wing Baby'
-      handle='@RightWingBaby'
-    }
-    return `<div id="tweet-ui" class="tweet-body max-w-xl mx-auto my-6">
+function constructTweetHTML(tweet, side) {
+  if (side === 'left') {
+    src = './images/boss-baby-left-1.png'
+    username = 'Left-wing Baby'
+    handle = '@LeftWingBaby'
+  } else {
+    src = './images/boss-baby-right-3.png'
+    username = 'Right-wing Baby'
+    handle = '@RightWingBaby'
+  }
+  return `<div id="tweet-ui" class="tweet-body max-w-xl mx-auto my-6">
     <article class="border-t border-b border-gray-400 p-2 hover:bg-gray-100 flex flex-wrap items-start cursor-pointer">
       <img src=${src} class="rounded-full w-12 h-12 mr-3" />
   
@@ -177,4 +199,13 @@ function constructTweetHTML(tweet, side){
       </div>
     </article>
   </div> `
+}
+
+function timeout(ms, promise) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      reject(new Error("timeout"))
+    }, ms)
+    promise.then(resolve, reject)
+  })
 }
